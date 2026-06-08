@@ -1,6 +1,6 @@
 # 🏦 Loan Default Prediction — End-to-End ML Pipeline
 
-> Predicting loan defaulters using a full machine learning pipeline — from raw data to a deployed REST API.
+> Predicting loan defaulters using a full machine learning pipeline — from raw data exploration to a deployed Flask REST API.
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
 ![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.x-orange?logo=scikit-learn)
@@ -12,7 +12,7 @@
 
 ## 📌 Problem Statement
 
-Financial institutions face significant losses due to loan defaults. This project builds a classification model to predict whether a borrower will default, with a focus on **maximizing recall for defaulters** — because missing a true defaulter is more costly than a false alarm.
+Financial institutions face significant losses due to loan defaults. This project builds a classification model to predict whether a borrower will default, with a strong focus on **maximizing recall for defaulters** — because missing a true defaulter is far more costly than a false alarm.
 
 ---
 
@@ -20,67 +20,85 @@ Financial institutions face significant losses due to loan defaults. This projec
 
 | Property | Value |
 |---|---|
+| File | `Loan_default.csv` |
 | Rows | 255,347 |
 | Target | `loan_status` (Default / No Default) |
 | Features | Credit score, income, loan amount, DTI ratio, employment length, etc. |
 
 ---
 
-## 🔍 Project Structure
+## 📁 Project Structure
 
 ```
 loan-default-prediction/
 │
-├── data/                    # Raw and processed datasets
-├── notebooks/
-│   ├── 01_EDA.ipynb         # Exploratory Data Analysis
-│   ├── 02_Preprocessing.ipynb
-│   └── 03_Modeling.ipynb    # Model training and comparison
-├── app/
-│   ├── app.py               # Flask REST API
-│   └── model.pkl            # Serialized model
-├── requirements.txt
+├── templates/                        # Flask HTML templates
+├── app.py                            # Flask REST API
+├── Loan_default.ipynb                # Full ML pipeline notebook
+├── Loan_default.csv                  # Dataset
+│
+├── logistic_regression_model.pkl     # Trained Logistic Regression model
+├── random_forest_model.pkl           # Trained Random Forest model
+├── xgboost_model.pkl                 # Trained XGBoost model
+├── scaler.pkl                        # Fitted StandardScaler
+│
+├── confusion_matrix_comparison.png   # Model evaluation visual
+├── feature_importance.png            # Feature importance chart
+├── Report.png                        # Summary report visual
+│
+├── Screen Record.mp4                 # Demo walkthrough
 └── README.md
 ```
 
 ---
 
-## 🧪 Workflow
+## 🔍 Workflow
 
 ### 1. Exploratory Data Analysis
-- Distribution of loan status (class imbalance analysis)
-- Correlation heatmap and feature importance ranking
+- Class imbalance analysis (default vs no default distribution)
+- Correlation heatmap and feature ranking
 - Missing value treatment and outlier detection
-- Key findings: DTI ratio, credit score, and loan-to-income ratio are the strongest predictors
+- Key finding: DTI ratio, credit score, and loan-to-income ratio are the strongest predictors
 
 ### 2. Preprocessing
 - Label encoding and one-hot encoding for categorical variables
-- Feature scaling with `StandardScaler`
-- Train/test split (80/20) with stratification
+- Feature scaling using `StandardScaler` (saved as `scaler.pkl`)
+- Stratified train/test split (80/20)
 
-### 3. Model Comparison
+### 3. Model Training & Comparison
 
-| Model | Accuracy | Precision | Recall (Defaulters) | F1 Score |
-|---|---|---|---|---|
-| Logistic Regression | ~89% | ~85% | **Highest** | ~87% |
-| Random Forest | ~91% | ~88% | Moderate | ~89% |
-| XGBoost | ~92% | ~90% | Lower | ~91% |
+| Model | Accuracy | Recall (Defaulters) | Notes |
+|---|---|---|---|
+| Logistic Regression | ~89% | **Highest** | ✅ Selected model |
+| Random Forest | ~91% | Moderate | High accuracy, lower defaulter recall |
+| XGBoost | ~92% | Lower | Best overall accuracy, not best for recall |
 
-> ✅ **Logistic Regression was selected** — despite XGBoost having higher overall accuracy, Logistic Regression achieved the best **recall for defaulters**, which is the business-critical metric in loan risk assessment.
+> ✅ **Logistic Regression was selected** — despite XGBoost having the highest overall accuracy, Logistic Regression achieved the best **recall for defaulters**, which is the business-critical metric in loan risk.
 
-### 4. Deployment
-- Serialized model with `joblib`
-- Flask REST API with `/predict` endpoint
-- Accepts JSON input, returns `{ "prediction": "Default" / "No Default", "probability": float }`
+### 4. Evaluation
+
+**Confusion Matrix Comparison:**
+
+![Confusion Matrix](confusion_matrix_comparison.png)
+
+**Feature Importance:**
+
+![Feature Importance](feature_importance.png)
+
+**Summary Report:**
+
+![Report](Report.png)
 
 ---
 
-## 🚀 API Usage
+## 🚀 Flask API
 
-**Start the server:**
+**Run the app:**
 ```bash
-python app/app.py
+python app.py
 ```
+
+**Predict endpoint:** `POST /predict`
 
 **Sample request:**
 ```bash
@@ -105,7 +123,7 @@ curl -X POST http://localhost:5000/predict \
 - **Visualization:** Matplotlib, Seaborn
 - **Modeling:** Scikit-learn, XGBoost
 - **Deployment:** Flask
-- **Environment:** Jupyter Notebook, VS Code
+- **Environment:** Jupyter Notebook
 
 ---
 
@@ -115,14 +133,21 @@ curl -X POST http://localhost:5000/predict \
 git clone https://github.com/SUJANC-17/loan-default-prediction.git
 cd loan-default-prediction
 pip install -r requirements.txt
+python app.py
 ```
+
+---
+
+## 🎥 Demo
+
+A full screen recording walkthrough is included in `Screen Record.mp4`.
 
 ---
 
 ## 📈 Key Takeaways
 
 - Accuracy alone is a poor metric for imbalanced classification — **recall matters more** in financial risk
-- Logistic Regression, despite being simpler, can outperform complex models on the metric that matters
+- Logistic Regression, despite being simpler, outperformed complex models on the metric that actually matters
 - End-to-end deployment bridges the gap between a notebook experiment and a usable product
 
 ---
