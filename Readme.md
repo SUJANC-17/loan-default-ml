@@ -1,160 +1,153 @@
-# 🏦 Loan Default Prediction — End-to-End ML Pipeline
+# Loan Default Prediction
 
-> Predicting loan defaulters using a full machine learning pipeline — from raw data exploration to a deployed Flask REST API.
+Flask web app and machine learning project for predicting whether a borrower is likely to default on a loan. The repository includes the training notebook, dataset, evaluation visuals, and the Flask frontend/backend used for inference.
 
-![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
-![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.x-orange?logo=scikit-learn)
-![XGBoost](https://img.shields.io/badge/XGBoost-enabled-green)
-![Flask](https://img.shields.io/badge/Flask-API-lightgrey?logo=flask)
-![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+## Project Overview
 
----
+This project uses borrower, employment, and loan-related attributes to predict:
 
-## 📌 Problem Statement
+- `DEFAULT`
+- `NO DEFAULT`
 
-Financial institutions face significant losses due to loan defaults. This project builds a classification model to predict whether a borrower will default, with a strong focus on **maximizing recall for defaulters** — because missing a true defaulter is far more costly than a false alarm.
+The current Flask app serves a browser UI and exposes a JSON prediction endpoint.
 
----
+## Repository Structure
 
-## 📊 Dataset
-
-| Property | Value |
-|---|---|
-| File | `Loan_default.csv` |
-| Rows | 255,347 |
-| Target | `loan_status` (Default / No Default) |
-| Features | Credit score, income, loan amount, DTI ratio, employment length, etc. |
-
----
-
-## 📁 Project Structure
-
-```
-loan-default-prediction/
-│
-├── templates/                        # Flask HTML templates
-├── app.py                            # Flask REST API
-├── Loan_default.ipynb                # Full ML pipeline notebook
-├── Loan_default.csv                  # Dataset
-│
-├── logistic_regression_model.pkl     # Trained Logistic Regression model
-├── random_forest_model.pkl           # Trained Random Forest model
-├── xgboost_model.pkl                 # Trained XGBoost model
-├── scaler.pkl                        # Fitted StandardScaler
-│
-├── confusion_matrix_comparison.png   # Model evaluation visual
-├── feature_importance.png            # Feature importance chart
-├── Report.png                        # Summary report visual
-│
-├── Screen Record.mp4                 # Demo walkthrough
-└── README.md
+```text
+Loan_default_ML/
+|-- app.py
+|-- templates/
+|   `-- index.html
+|-- Loan_default.csv
+|-- Loan_default.ipynb
+|-- confusion_matrix_comparison.png
+|-- feature_importance.png
+|-- Report.png
+|-- Screen Record.mp4
+|-- caption.srt
+|-- requirements.txt
+|-- .gitignore
+|-- README.md
 ```
 
----
+Notes:
 
-## 🔍 Workflow
+- The repository ignores `*.pkl` files.
+- `app.py` expects `logistic_regression_model.pkl` and `scaler.pkl` to be available in the project root at runtime.
 
-### 1. Exploratory Data Analysis
-- Class imbalance analysis (default vs no default distribution)
-- Correlation heatmap and feature ranking
-- Missing value treatment and outlier detection
-- Key finding: DTI ratio, credit score, and loan-to-income ratio are the strongest predictors
+## Files
 
-### 2. Preprocessing
-- Label encoding and one-hot encoding for categorical variables
-- Feature scaling using `StandardScaler` (saved as `scaler.pkl`)
-- Stratified train/test split (80/20)
+- `app.py`: Flask application with `/` and `/predict` routes
+- `templates/index.html`: Browser UI for entering borrower details and viewing predictions
+- `Loan_default.csv`: Source dataset used for analysis and modeling
+- `Loan_default.ipynb`: Notebook for data exploration, preprocessing, training, and evaluation
+- `confusion_matrix_comparison.png`: Model comparison visual
+- `feature_importance.png`: Feature importance visual
+- `Report.png`: Summary report image
+- `Screen Record.mp4`: Demo recording
+- `caption.srt`: Subtitle file for the demo video
+- `requirements.txt`: Python dependencies
 
-### 3. Model Training & Comparison
+## Application Behavior
 
-| Model | Accuracy | Recall (Defaulters) | Notes |
-|---|---|---|---|
-| Logistic Regression | ~89% | **Highest** | ✅ Selected model |
-| Random Forest | ~91% | Moderate | High accuracy, lower defaulter recall |
-| XGBoost | ~92% | Lower | Best overall accuracy, not best for recall |
+### Home Page
 
-> ✅ **Logistic Regression was selected** — despite XGBoost having the highest overall accuracy, Logistic Regression achieved the best **recall for defaulters**, which is the business-critical metric in loan risk.
+Open `/` to load the HTML form in `templates/index.html`.
 
-### 4. Evaluation
+### Prediction Endpoint
 
-**Confusion Matrix Comparison:**
+`POST /predict`
 
-![Confusion Matrix](confusion_matrix_comparison.png)
+The request body must be JSON with the fields expected by `app.py`, including:
 
-**Feature Importance:**
+- `Age`
+- `Income`
+- `LoanAmount`
+- `CreditScore`
+- `MonthsEmployed`
+- `NumCreditLines`
+- `InterestRate`
+- `LoanTerm`
+- `DTIRatio`
+- `Education`
+- `HasMortgage`
+- `HasDependents`
+- `HasCoSigner`
+- `EmploymentType_Full-time`
+- `EmploymentType_Part-time`
+- `EmploymentType_Self-employed`
+- `EmploymentType_Unemployed`
+- `MaritalStatus_Divorced`
+- `MaritalStatus_Married`
+- `MaritalStatus_Single`
+- `LoanPurpose_Auto`
+- `LoanPurpose_Business`
+- `LoanPurpose_Education`
+- `LoanPurpose_Home`
+- `LoanPurpose_Other`
 
-![Feature Importance](feature_importance.png)
+Example response:
 
-**Summary Report:**
-
-![Report](Report.png)
-
----
-
-## 🚀 Flask API
-
-**Run the app:**
-```bash
-python app.py
-```
-
-**Predict endpoint:** `POST /predict`
-
-**Sample request:**
-```bash
-curl -X POST http://localhost:5000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"credit_score": 620, "income": 45000, "loan_amount": 15000, "dti_ratio": 0.35, "employment_length": 3}'
-```
-
-**Sample response:**
 ```json
 {
-  "prediction": "Default",
-  "probability": 0.73
+  "prediction": "DEFAULT",
+  "default_probability": 73.42
 }
 ```
 
----
+## Setup
 
-## 🛠️ Tech Stack
-
-- **Data Analysis:** Python, Pandas, NumPy
-- **Visualization:** Matplotlib, Seaborn
-- **Modeling:** Scikit-learn, XGBoost
-- **Deployment:** Flask
-- **Environment:** Jupyter Notebook
-
----
-
-## 📦 Installation
+Install dependencies:
 
 ```bash
-git clone https://github.com/SUJANC-17/loan-default-prediction.git
-cd loan-default-prediction
 pip install -r requirements.txt
+```
+
+Run the Flask app:
+
+```bash
 python app.py
 ```
 
----
+Then open the local server shown in the terminal.
 
-## 🎥 Demo
+## Required Model Artifacts
 
-A full screen recording walkthrough is included in `Screen Record.mp4`.
+To run inference successfully, place these files in the repository root:
 
----
+- `logistic_regression_model.pkl`
+- `scaler.pkl`
 
-## 📈 Key Takeaways
+These files are not committed to git because `*.pkl` is ignored.
 
-- Accuracy alone is a poor metric for imbalanced classification — **recall matters more** in financial risk
-- Logistic Regression, despite being simpler, outperformed complex models on the metric that actually matters
-- End-to-end deployment bridges the gap between a notebook experiment and a usable product
+## Tech Stack
 
----
+- Python
+- Flask
+- pandas
+- scikit-learn
+- XGBoost
+- NumPy
+- Jupyter Notebook
 
-## 👤 Author
+## Demo Assets
 
-**Sujan C** — B.E. CSE, SKCET Coimbatore (2024–2028)
+The repository includes:
 
-[![GitHub](https://img.shields.io/badge/GitHub-SUJANC--17-black?logo=github)](https://github.com/SUJANC-17)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-sujan--c-blue?logo=linkedin)](https://linkedin.com/in/sujan-c-195834377)
+- `Screen Record.mp4` for the walkthrough
+- `caption.srt` for subtitles
+- `Report.png` for the summary visual
+
+## Training Workflow
+
+The notebook covers:
+
+- data loading and inspection
+- preprocessing and feature engineering
+- model training
+- evaluation and comparison
+- selection of the final model used by the Flask app
+
+## License
+
+No license file is currently included in the repository.
